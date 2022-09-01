@@ -1,0 +1,8 @@
+#!/bin/sh
+set -euox pipefail
+
+filters="fps=20,scale=350:-1:flags=lanczos"
+palettegen="stats_mode=diff"
+paletteuse="new=1:dither=none"
+
+exec ffmpeg -v warning -i "$1" -vf "$filters,split [s0][s1];[s0] palettegen=$palettegen [p];[s1][p] paletteuse=$paletteuse" -loop 0 -y -f gif "$2"

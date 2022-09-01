@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+SAVEIFS=$IFS
+
+echo "Possible maps for rwpeg ..."
+names=($(find . -name "*.jpg" | cut -d '-' -f2,3 | sort | uniq))
+IFS=$(echo -en "\n\b")
+
+for name in ${names}
+do
+  echo "rwpeg \"${name}\""
+done
+
+IFS=$SAVEIFS
