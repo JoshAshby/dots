@@ -9,7 +9,7 @@ alias mk 'mkdir'
 
 alias nope "echo 'Oh, okay... :('"
 
-alias dotfiles="git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME"
+alias dotfiles "git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME"
 
 . ~/.config/fish/aliases/docker.fish
 . ~/.config/fish/aliases/elixir.fish

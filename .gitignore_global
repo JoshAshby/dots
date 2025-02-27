@@ -25,3 +25,4 @@ log/
 .vim/bundle/
 
 .config/fish/fish_variables
+mise.local.toml

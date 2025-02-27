@@ -41,26 +41,30 @@ end
 
 # display the latest git hash for the current branch if we're in a git dir
 function _git_hash
-  echo -n (git log -1 ^/dev/null | sed -n -e 's/^commit \([a-z0-9]\{8\}\)[a-z0-9]\{32\}/\1/p')
+  echo -n (git log -1 2>/dev/null | sed -n -e 's/^commit \([a-z0-9]\{8\}\)[a-z0-9]\{32\}/\1/p')
 end
 
 function _fossil_hash
-  echo -n (fossil status ^/dev/null | sed -n -e 's/^checkout:[[:space:]]*\([a-z0-9]\{8\}\)[a-z0-9]\{32\}[[:space:]].*$/\1/p')
+  echo -n (fossil status 2>/dev/null | sed -n -e 's/^checkout:[[:space:]]*\([a-z0-9]\{8\}\)[a-z0-9]\{32\}[[:space:]].*$/\1/p')
 end
 
 function _git_prompt
-  set index (fish -lc "eval (asdf where ruby 2.7.3)/bin/ruby $DOTS/bin/gitstatus")
+  if test -e $HOME/bin/gitstatus
+    set index (fish -lc "eval $(mise where ruby@2.7.3)/bin/ruby $HOME/bin/gitstatus")
 
-  if test -n "$index[1]"
-    echo -s -n (_left_prompt_segment red black) $index
+    if test -n "$index[1]"
+      echo -s -n (_left_prompt_segment red black) $index
+    end
   end
 end
 
 function _fossil_prompt
-  set index (fish -lc "eval (asdf where ruby 2.7.3)/bin/ruby $DOTS/bin/fossilstatus")
+  if test -e $HOME/bin/fossilstatus
+    set index (fish -lc "eval $(mise where ruby@2.7.3)/bin/ruby $HOME/bin/fossilstatus")
 
-  if test -n "$index[1]"
-    echo -s -n (_left_prompt_segment red black) $index
+    if test -n "$index[1]"
+      echo -s -n (_left_prompt_segment red black) $index
+    end
   end
 end
 
@@ -123,7 +127,8 @@ function fish_prompt
   echo
   echo -s -n '┌─' (_status_prompt) (_env_prompt) (_date_prompt) (_left_prompt_end)
   echo
-  echo -s -n '| ' (_ssh_prompt) (_git_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
+  #echo -s -n '| ' (_ssh_prompt) (_git_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
+  echo -s -n '| ' (_ssh_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
   echo
   echo -s -n '└─' (_pwd_prompt) (_left_prompt_end)
 end
