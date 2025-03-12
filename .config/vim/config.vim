@@ -54,7 +54,7 @@ augroup vimrc_autocmds
   "autocmd BufRead,BufNewFile *.lookml set filetype=yaml
 
   " Strip whitespace when working in these filetypes
-  autocmd FileType c,cpp,java,php,python,coffee,javascript,css,less,ruby,yaml autocmd BufWritePre <buffer> :%s/\s\+$//e
+  "autocmd FileType c,cpp,java,php,python,coffee,javascript,css,less,ruby,yaml autocmd BufWritePre <buffer> :%s/\s\+$//e
 
   " Enable html tag closing on typical html style file types
   autocmd FileType html,djangohtml,jinjahtml,eruby,mako let b:closetag_html_style=1
@@ -162,7 +162,11 @@ source ~/.config/vim/ocaml.vim
 source ~/.config/vim/syntastic.vim
 source ~/.config/vim/tagbar.vim
 source ~/.config/vim/ale.vim
+source ~/.config/vim/slime.vim
 source ~/.config/vim/autocomplete.vim
+
+"let $FZF_DEFAULT_COMMAND='find . \( -name node_modules -o -name .git \) -prune -o -print'
+let $FZF_DEFAULT_COMMAND='fd --type f --strip-cwd-prefix'
 
 " Searching {{{
 set grepprg=egrep\ -nH\ $*
@@ -255,23 +259,12 @@ nnoremap <silent> <leader>z :set cursorline!<CR>
 nnoremap <silent> <leader>x :set cursorcolumn!<CR>
 
 " VCS things
-"nnoremap <silent> <leader>b :VCSBlame<CR>
-"nnoremap <silent> <leader>d :VCSDiff<CR>
+nnoremap <silent> <leader>b :VCSBlame<CR>
+nnoremap <silent> <leader>d :VCSDiff<CR>
 
 " Copy full and short file paths to the clipboard
 nmap <silent> <leader>yf :let @*=expand("%:p")<CR>
 nmap <silent> <leader>ys :let @*=expand("%")<CR>
-
-" Use a leader instead of the actual named binding
-"nmap <leader>p :CtrlP<cr>
-
-"" Easy bindings for its various modes
-"nmap <leader>bb :CtrlPBuffer<cr>
-"nmap <leader>bm :CtrlPMixed<cr>
-"nmap <leader>bs :CtrlPMRU<cr>
-
-" close, delete and move to the next buffer
-"nmap <leader>bq :bp <BAR> bd #<cr>
 
 " vim-fzf bindings
 nmap <silent> <C-p> :Files<CR>
@@ -280,5 +273,4 @@ let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
   \ 'ctrl-x': 'split',
   \ 'ctrl-v': 'vsplit' }
-"let g:fzf_layout = { 'window': { 'width': 0.9, 'height': 0.6, 'relative': v:true, 'yoffset': 1.0 } }
 " }}}

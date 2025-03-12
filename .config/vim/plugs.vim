@@ -1,8 +1,6 @@
-call plug#begin()
+packadd! editorconfig
 
-" Manage itself
-"Plug 'gmarik/Vundle.vim'
-"Plug 'vim-scripts/L9'
+call plug#begin()
 
 " Git related bundles
 Plug 'tpope/vim-fugitive'
@@ -29,8 +27,6 @@ Plug 'tpope/vim-endwise'
 
 Plug 'AndrewRadev/switch.vim'
 
-"Plug 'nathanaelkane/vim-indent-guides'
-
 " Plug 'ervandew/supertab'
 " Plug 'Shougo/neocomplete.vim'
 " Plug 'Shougo/deoplete.nvim'
@@ -45,6 +41,8 @@ Plug 'kchmck/vim-coffee-script'
 
 " - Language Server suppport
 Plug 'dense-analysis/ale'
+
+Plug 'jpalardy/vim-slime'
 
 " Quick fuzzy searching for files
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }

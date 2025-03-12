@@ -10,16 +10,21 @@ fish_add_path /opt/homebrew/bin
 fish_add_path "$HOME/repos/personal/gni"
 fish_add_path "/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 
-source ~/.config/fish/aliases.fish
-
 set -gx EDITOR vim
-set -gx ZELLIJ_CONFIG_DIR "{$HOME}/.config/zellij"
+set -gx ZELLIJ_CONFIG_DIR "$HOME/.config/zellij"
 
-test -e {$HOME}/.iterm2_shell_integration.fish
+string match -q "$TERM_PROGRAM" "iTerm.app"
+and test -e {$HOME}/.iterm2_shell_integration.fish
 and source {$HOME}/.iterm2_shell_integration.fish
 
+string match -q "$TERM_PROGRAM" "ghostty"
+and not set -q ZELLIJ
+and if status is-interactive
+  zellij
+end
+
 string match -q "$TERM_PROGRAM" "vscode"
-and source (code --locate-shell-integration-path fish)
+and code --locate-shell-integration-path fish | source
 
 test -e $HOME/.local/bin/mise
 and if status is-interactive
@@ -33,13 +38,16 @@ and if status is-interactive
   atuin init fish --disable-up-arrow | source
 end
 
-string match -q "$TERM" "xterm-ghostty"
-and not set -q ZELLIJ
+test -e $HOME/.local/bin/zoxide
 and if status is-interactive
-  zellij
+  zoxide init fish | source
 end
 
 set -gx DO_NOT_TRACK 1
+
+set -gx ET_NO_TELEMETRY 1
+
+set -gx DOTNET_CLI_TELEMETRY_OPTOUT 1
 
 # seriously fuck off homebrew and stop breaking my shit with auto upgrades that
 # aren't documented anywhere besides a pr from 2017
@@ -48,9 +56,15 @@ set -gx HOMEBREW_NO_AUTO_UPDATE 1
 set -gx HOMEBREW_NO_INSTALL_UPGRADE 1 # WHAT THE FLYING FUCK HOMEBREW
 set -gx HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK 1 # GODDAMMIT HOMEBREW
 
-#set -gx DOCKER_HOST 'unix:///Users/joshashby/.local/share/containers/podman/machine/podman-machine-default/podman.sock'
-#set -gx DOCKER_HOST 'unix:///var/run/docker.sock'
+abbr --add mk "mkdir"
 
-set -gx ET_NO_TELEMETRY 1
+alias vi "vim"
+#alias v "gvim"
+alias nano "gvim"
 
-set -gx DOTNET_CLI_TELEMETRY_OPTOUT 1
+alias g "git"
+
+alias la "ls -la"
+alias sl "ls -aCS1hl"
+
+alias dotfiles "git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME"

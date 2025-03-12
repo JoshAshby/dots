@@ -1,1 +1,0 @@
-alias ti 'iex -S'

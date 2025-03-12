@@ -1,6 +1,0 @@
-alias dcb 'docker-compose build'
-alias dcu 'docker-compose up'
-alias dcs 'docker-compose start'
-alias dcr 'docker-compose run'
-alias dcstahp 'docker-compose stop'
-alias dcdown 'docker-compose down'
