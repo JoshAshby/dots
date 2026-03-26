@@ -1,8 +1,64 @@
-#!/bin/sh
+#!/bin/bash
 set -euox pipefail
 
-filters="fps=20,scale=350:-1:flags=lanczos"
-palettegen="stats_mode=diff"
-paletteuse="new=1:dither=none"
+#tmp_trimmed="/tmp/trimmed.mkv"
+tmp_palette="/tmp/palette.png"
 
-exec ffmpeg -v warning -i "$1" -vf "$filters,split [s0][s1];[s0] palettegen=$palettegen [p];[s1][p] paletteuse=$paletteuse" -loop 0 -y -f gif "$2"
+input=$1
+output=$2
+shift 2
+
+filters=()
+
+fps="20"
+resolution="960"
+
+filters+=(
+  "fps=${fps}"
+  "scale=${resolution}:-1:flags=lanczos"
+)
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --res)
+      resolution=$2
+      shift 2
+      ;;
+    --fps)
+      fps=$2
+      shift 2
+      ;;
+    --high-def)
+      filters+=("split [s0][s1];[s0] palettegen=stats_mode=diff [p];[s1][p] paletteuse=new=1:dither=none")
+      shift
+      ;;
+    --with-subs)
+      filters+=("subtitles=filename='${input}':stream_index=0:force_style='FontName=Arial,FontSize=22,Bold=0,Outline=1.5'")
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+#ffmpeg -i "${input}" -copyts "$@" -map 0 -c copy -y "${input}"
+
+
+filter_string=""
+IFS=, eval 'filter_string="${filters[*]}"'
+
+#palette_filters="${filter_string},palettegen"
+#palette_filters="${filter_string},palettegen=stats_mode=diff"
+#palette_filters="${filter_string},palettegen=max_colors=128:stats_mode=diff"
+palette_filters="${filter_string},palettegen=max_colors=256:stats_mode=diff"
+#ffmpeg -v warning "$@" -copyts -i "${input}" "$@" -vf "${palette_filters}" -y "${tmp_palette}"
+
+output_filters="${filter_string}[x];[x][1:v]paletteuse"
+#output_filters="${filter_string}[x];[x][1:v]paletteuse=new=1:dither=none"
+#output_filters="${filter_string}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle"
+#output_filters="${filter_string}[x];[x][1:v]paletteuse=dither=sierra2_4a"
+#exec ffmpeg -v warning "$@" -copyts -i "${input}" -i "${tmp_palette}" "$@" -gifflags +transdiff -lavfi "${output_filters}" -loop 0 -f gif -y "${output}"
+
+
+exec ffmpeg -v warning "$@" -copyts -i "${input}" "$@" -vf "${filter_string}" -loop 0 -f gif "${output}"

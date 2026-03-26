@@ -27,7 +27,7 @@ let g:ale_linters = {
 
 let g:ale_fixers = {
 \   'ocaml':      ['ocamlformat'],
-\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
+"\   '*':          ['remove_trailing_lines', 'trim_whitespace'],
 \}
 
 " see ale-completion-completeopt-bug

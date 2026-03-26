@@ -1,5 +1,5 @@
-set _left_segment ''
-set _right_segement ''
+set _left_segment ''
+set _right_segement ''
 
 if set -q SSH_CONNECTION
   set _left_segment '>'
@@ -50,7 +50,7 @@ end
 
 function _git_prompt
   if test -e $HOME/bin/gitstatus
-    set index (fish -lc "eval $(mise where ruby@2.7.3)/bin/ruby $HOME/bin/gitstatus")
+    set index (fish -lc "$HOME/bin/gitstatus")
 
     if test -n "$index[1]"
       echo -s -n (_left_prompt_segment red black) $index
@@ -60,7 +60,7 @@ end
 
 function _fossil_prompt
   if test -e $HOME/bin/fossilstatus
-    set index (fish -lc "eval $(mise where ruby@2.7.3)/bin/ruby $HOME/bin/fossilstatus")
+    set index (fish -lc "$HOME/bin/fossilstatus")
 
     if test -n "$index[1]"
       echo -s -n (_left_prompt_segment red black) $index
@@ -110,7 +110,7 @@ function _env_prompt
   end
 
   if set -q AWS_VAULT
-    echo -s -n (_left_prompt_segment yellow black) ' {|' $AWS_VAULT '|} ' (set_color normal)
+    echo -s -n (_left_prompt_segment yellow black) '  ' $AWS_VAULT '  ' (set_color normal)
   end
 end
 
@@ -128,7 +128,7 @@ function fish_prompt
   echo -s -n '┌─' (_status_prompt) (_env_prompt) (_date_prompt) (_left_prompt_end)
   echo
   #echo -s -n '| ' (_ssh_prompt) (_git_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
-  echo -s -n '| ' (_ssh_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
+  echo -s -n '| ' (_ssh_prompt) (_git_prompt) (_fossil_prompt) (_repo_hash_prompt) (_left_prompt_end)
   echo
   echo -s -n '└─' (_pwd_prompt) (_left_prompt_end)
 end

@@ -1,6 +1,11 @@
-#!/usr/bin/env ruby
+#!/usr/bin/env -S mise x ruby@3.3.0 -- ruby
 
-require "rugged"
+require "bundler/inline"
+
+gemfile do
+  source "https://rubygems.org"
+  gem "rugged"
+end
 
 class GitStatus
   ICONS = [

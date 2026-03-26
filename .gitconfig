@@ -2,26 +2,33 @@
   default = simple
 
 [user]
-	name = JoshAshby
-	email = joshuaashby@joshashby.com
-	signingkey = ADFDC3AF
+  name = JoshAshby
+  email = joshuaashby@joshashby.com
+  signingkey = ADFDC3AF
 
 [core]
   excludesfile = ~/.gitignore_global
   editor = /opt/homebrew/bin/vim
+  pager = delta --diff-so-fancy
+
+[interactive]
+  diffFilter = delta --color-only
+
+[init]
+  defaultBranch = main
 
 [commit]
   gpgsign = true
 
-[core]
-    pager = delta --diff-so-fancy
+[pull]
+  rebase = true
 
-[interactive]
-    diffFilter = delta --color-only
+[rebase]
+  autosquash = true
+
+[alias]
+  fixup = "!git log -n 50 --pretty=format:'%h %s' --no-merges | fzf | cut -c -7 | xargs -o git commit --fixup"
 
 [delta]
-    features = side-by-side line-numbers decorations
-[pull]
-	rebase = true
-[init]
-	defaultBranch = main
+  features = side-by-side line-numbers decorations
+  pager = less -FRX

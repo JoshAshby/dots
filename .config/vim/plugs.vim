@@ -38,6 +38,7 @@ Plug 'joshdick/onedark.vim'
 Plug 'dag/vim-fish'
 Plug 'elixir-editors/vim-elixir'
 Plug 'kchmck/vim-coffee-script'
+Plug 'gleam-lang/gleam.vim'
 
 " - Language Server suppport
 Plug 'dense-analysis/ale'

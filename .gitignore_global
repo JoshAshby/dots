@@ -25,4 +25,6 @@ log/
 .vim/bundle/
 
 .config/fish/fish_variables
+.cashby.procfile
+
 mise.local.toml

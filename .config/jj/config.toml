@@ -1,0 +1,87 @@
+[user]
+name = "Josh Ashby"
+email = "joshuaashby@joshashby.com"
+
+[signing]
+behavior = "own"
+backend = "gpg"
+
+[git]
+write-change-id-header = true
+private-commits = "description(glob:'[LOCAL] *')"
+ignore-refs = ["refs/remotes/origin/engineer-josh-skyler/rails-7-dot-1-mega-branch"]
+
+
+[ui]
+pager = "delta"
+diff-editor = ":builtin"
+diff-formatter = ":git"
+default-command = "status"
+
+#diff-editor = ["ksdiff", "--wait", "$left", "--no-snapshot", "$right", "--no-snapshot"]
+#merge-editor = ["ksdiff", "--merge", "--output", "$output", "--base", "$base", "--", "$left", "--snapshot", "$right", "--snapshot"]
+
+[ui.movement]
+edit = true # Make next/prev default to edit rather than new temp commits
+
+[aliases]
+log-main = ["log", "-r", "main::"]
+log-workspace = ["log", "-r", "trunk()::roots(@)"]
+log-me = ["log", "-r", "@ | ancestors(trunk()..(visible_heads() & mine() ~bookmarks(backup)), 2) | trunk()"]
+log-hacks = ["log", "-r", "trunk()..local/hacking"]
+tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+fixup = ["describe", "-r", "@-"]
+
+[revset-aliases]
+'recent()' = 'committer_date(after:"1 month ago")'
+'immutable_heads()' = "trunk() | tags()"
+
+[templates]
+#log_node = '''
+#label("node",
+  #coalesce(
+    #if(!self, label("elided", "~")),
+    #if(current_working_copy, label("working_copy", "@")),
+    #if(conflict, label("conflict", "×")),
+    #if(immutable, label("immutable", "*")),
+    #label("normal", "·")
+  #)
+#)
+#'''
+
+log = '''
+if(root,
+  format_root_commit(self),
+  label(if(current_working_copy, "working_copy"),
+    concat(
+      separate(" ",
+        format_short_change_id_with_change_offset(self),
+        if(empty, label("empty", "(empty)")),
+        if(description,
+          description.first_line(),
+          label(if(empty, "empty"), description_placeholder),
+        ),
+        bookmarks,
+        tags,
+        working_copies,
+        if(self.contained_in('first_parent(@)'), label("git_head", "HEAD")),
+        if(conflict, label("conflict", "conflict")),
+        if(config("ui.show-cryptographic-signatures").as_boolean(),
+          format_short_cryptographic_signature(signature)),
+      ) ++ "\n",
+    ),
+  )
+)
+'''
+
+draft_commit_description ='''
+concat(
+  coalesce(description, default_commit_description, "\n"),
+  surround(
+    "\nJJ: This commit contains the following changes:\n", "",
+    indent("JJ:     ", diff.stat(72)),
+  ),
+  "\nJJ: ignore-rest\n",
+  diff.git(),
+)
+'''

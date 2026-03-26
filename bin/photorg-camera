@@ -30,6 +30,7 @@ class PhotorgCamera
       .reject(&:directory?)
       .reject { |path| IGNORE.include? path.basename.to_s }
       .each do |file|
+        next if file.extname == ".xmp"
         exif = Exiftool.new file
 
         if exif.errors?
@@ -38,6 +39,7 @@ class PhotorgCamera
         end
 
         date = format_time file.birthtime
+        binding.pry
         model = exif[:model].downcase.gsub %r{\s}, "_"
 
         directory = root.join date, model
@@ -49,11 +51,11 @@ class PhotorgCamera
         # puts "Would move #{ file } to #{ destination }"
         FileUtils.mv file, destination, verbose: true
 
-        # raw_file = file.extname ".CR2"
+        sidecar_file = file.extname "#{file.extname}.xmp"
+        next unless sidecar_file.exist?
 
-        # next unless raw_file.exist?
-
-        # FileUtils.mv raw_file, destination, verbose: true
+        FileUtils.mv sidecar_file, destination, verbose: true
+        puts "Also moved sidecar: #{sidecar_file}"
       end
 
     puts "Moved #{ files.length } files into date & camera sorted directories ..."
