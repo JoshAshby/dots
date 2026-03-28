@@ -1,0 +1,6 @@
+/home/josh/apps/bones/shared/fossil
+/home/josh/apps/registry/data/
+/home/josh/apps/bones/bones_data/bones_home/.bash_history
+/home/josh/apps/dontrobfish/data/home/.bash_history
+/home/josh/apps/dontrobfish/data/home/.irb_history
+*.log

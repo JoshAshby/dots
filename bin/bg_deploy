@@ -1,0 +1,61 @@
+#!/bin/bash
+set -euo pipefail
+
+TIMEOUT=60
+
+source ./bluegreen_dets
+
+docker-compose pull
+
+if [[ -n $(docker ps -f name=blue -f ancestor="${ANCESTOR}" -q) ]]
+then
+  ENV="green"
+  OLD="blue"
+else
+  ENV="blue"
+  OLD="green"
+fi
+
+current_version=$(build_version)
+if [[ -n "${current_version}" ]]
+then
+  echo "Currently running ${current_version} as ${OLD} ..."
+else
+  echo "No version running!"
+fi
+
+echo "Starting ${ENV} container"
+docker-compose --project-name="${ENV}" up -d
+
+echo "Waiting a max of ${TIMEOUT}s for new container to be healthy ..."
+
+count=0
+while true
+do
+  if [[ -n $(docker ps -f name="${ENV}" -f ancestor="${ANCESTOR}" -f health=healthy -q) ]]
+  then
+    echo "New container is healthy, continuing"
+    break
+  fi
+
+  if [[ $count -eq $TIMEOUT ]]
+  then
+    echo "Timeout ${TIMEOUT}s while waiting for new container, bailing"
+    docker-compose --project-name="${ENV}" logs "${ANCESTOR}"
+    exit 1
+  fi
+
+  count=$((count + 1))
+  sleep 1s
+done
+
+echo "Stopping ${OLD} container"
+docker-compose --project-name="${OLD}" down
+
+new_version=$(build_version)
+if [[ -n "${new_version}" ]]
+then
+  echo "Now running ${new_version} as ${ENV} ..."
+else
+  echo "New version for ${ENV} failed to start"
+fi

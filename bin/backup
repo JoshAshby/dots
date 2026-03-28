@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+
+echo "---------------Scheduled backup time---------------"
+echo ""
+source /home/josh/backup_env
+restic backup /home/josh/apps/ --verbose --exclude-file=/home/josh/bin/backup_exclude.txt
+echo ""
+echo "---------------Backup done, removing old snapshots---------------"
+echo ""
+restic forget --keep-weekly 5
+echo ""
+echo "---------------Old snapshots removed, verifying the data is restorable---------------"
+echo ""
+restic check
+echo ""
+echo "---------------Backup done and verified!---------------"

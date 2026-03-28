@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+source ./bluegreen_dets
+
+if [[ -n $(docker ps -f name=blue -f ancestor="${ANCESTOR}" -q) ]]
+then
+  ENV="blue"
+else
+  ENV="green"
+fi
+
+exec docker-compose -p "${ENV}" logs -f $@
