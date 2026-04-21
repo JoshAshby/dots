@@ -18,5 +18,3 @@ alias nano "gvim"
 alias la "ls -la"
 alias sl "ls -aCS1hl"
 
-alias dotfiles "git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME"
-

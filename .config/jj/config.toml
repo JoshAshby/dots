@@ -1,87 +1,102 @@
 [user]
-name = "Josh Ashby"
-email = "joshuaashby@joshashby.com"
+  name = "Josh Ashby"
+  email = "joshuaashby@joshashby.com"
 
 [signing]
-behavior = "own"
-backend = "gpg"
+  behavior = "own"
+  backend = "gpg"
 
 [git]
-write-change-id-header = true
-private-commits = "description(glob:'[LOCAL] *')"
-ignore-refs = ["refs/remotes/origin/engineer-josh-skyler/rails-7-dot-1-mega-branch"]
+  write-change-id-header = true
+  private-commits = "description(glob:'[LOCAL] *')"
 
 
 [ui]
-pager = "delta"
-diff-editor = ":builtin"
-diff-formatter = ":git"
-default-command = "status"
-
-#diff-editor = ["ksdiff", "--wait", "$left", "--no-snapshot", "$right", "--no-snapshot"]
-#merge-editor = ["ksdiff", "--merge", "--output", "$output", "--base", "$base", "--", "$left", "--snapshot", "$right", "--snapshot"]
+  pager = "delta"
+  diff-editor = ":builtin"
+  diff-formatter = ":git"
+  default-command = "status"
 
 [ui.movement]
-edit = true # Make next/prev default to edit rather than new temp commits
+  # Make next/prev default to edit rather than new temp commits
+  edit = true
 
 [aliases]
-log-main = ["log", "-r", "main::"]
-log-workspace = ["log", "-r", "trunk()::roots(@)"]
-log-me = ["log", "-r", "@ | ancestors(trunk()..(visible_heads() & mine() ~bookmarks(backup)), 2) | trunk()"]
-log-hacks = ["log", "-r", "trunk()..local/hacking"]
-tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
-fixup = ["describe", "-r", "@-"]
+  # Whats up after `main`?
+  log-main = ["log", "-r", "trunk()::"]
+
+  # Part of my mega-merge workflow, logs out the merge tree from trunk to where I am
+  log-workspace = ["log", "-r", "trunk()::roots(@)"]
+
+  # Log out where I am, trunk, and everything else that is "mine" except for
+  # branches that start with "backup/" because those come from Forks rebase
+  # feature.
+  log-me = ["log", "-r", "@ | ancestors(trunk()..(visible_heads() & mine() ~bookmarks(backup)), 2) | trunk()"]
+
+  # I keep a local branch to stash various experiments that don't fit in with
+  # the standard megamerge workflow (too much merge noise for example) to I
+  # like having a quick way to log it out and see each experiments branch.
+  # Kinda like a separate mega-merge workflow for highly disruptive experiments
+  log-hacks = ["log", "-r", "trunk()..local/hacking"]
+
+  # Not really needed anymore with `jj bookmark advance` but moves the
+  # closest bookmarks to the previous commit
+  tug = ["bookmark", "move", "--from", "heads(::@- & bookmarks())", "--to", "@-"]
+
+  # Quickly adjust the previous commit's description
+  fixup = ["describe", "-r", "@-"]
+
+  # These next 3 are taken from https://isaaccorbrey.com/notes/jujutsu-megamerges-for-fun-and-profit
+  # `jj stack <revset>` to include specific revs
+  stack = ["rebase", "--after", "trunk()", "--before", "closest_merge(@)", "--revision"]
+
+  # `jj stage` to include the whole stack after the megamerge
+  stage = ["stack", "closest_merge(@).. ~ empty()"]
+
+  # `jj restack` to rebase your changes onto `trunk()`
+  restack = ["rebase", "--onto", "trunk()", "--source", "roots(trunk()..) & mutable()"]
+
 
 [revset-aliases]
-'recent()' = 'committer_date(after:"1 month ago")'
-'immutable_heads()' = "trunk() | tags()"
+  'recent()' = 'committer_date(after:"1 month ago")'
+  'immutable_heads()' = "(trunk() | tags())"
+  'closest_merge(to)' = "heads(::to & merges())"
+
 
 [templates]
-#log_node = '''
-#label("node",
-  #coalesce(
-    #if(!self, label("elided", "~")),
-    #if(current_working_copy, label("working_copy", "@")),
-    #if(conflict, label("conflict", "×")),
-    #if(immutable, label("immutable", "*")),
-    #label("normal", "·")
-  #)
-#)
-#'''
-
-log = '''
-if(root,
-  format_root_commit(self),
-  label(if(current_working_copy, "working_copy"),
-    concat(
-      separate(" ",
-        format_short_change_id_with_change_offset(self),
-        if(empty, label("empty", "(empty)")),
-        if(description,
-          description.first_line(),
-          label(if(empty, "empty"), description_placeholder),
-        ),
-        bookmarks,
-        tags,
-        working_copies,
-        if(self.contained_in('first_parent(@)'), label("git_head", "HEAD")),
-        if(conflict, label("conflict", "conflict")),
-        if(config("ui.show-cryptographic-signatures").as_boolean(),
-          format_short_cryptographic_signature(signature)),
-      ) ++ "\n",
-    ),
+  log = '''
+  if(root,
+    format_root_commit(self),
+    label(if(current_working_copy, "working_copy"),
+      concat(
+        separate(" ",
+          format_short_change_id_with_change_offset(self),
+          if(empty, label("empty", "(empty)")),
+          if(description,
+            description.first_line(),
+            label(if(empty, "empty"), description_placeholder),
+          ),
+          bookmarks,
+          tags,
+          working_copies,
+          if(self.contained_in('first_parent(@)'), label("git_head", "HEAD")),
+          if(conflict, label("conflict", "conflict")),
+          if(config("ui.show-cryptographic-signatures").as_boolean(),
+            format_short_cryptographic_signature(signature)),
+        ) ++ "\n",
+      ),
+    )
   )
-)
-'''
+  '''
 
-draft_commit_description ='''
-concat(
-  coalesce(description, default_commit_description, "\n"),
-  surround(
-    "\nJJ: This commit contains the following changes:\n", "",
-    indent("JJ:     ", diff.stat(72)),
-  ),
-  "\nJJ: ignore-rest\n",
-  diff.git(),
-)
-'''
+  draft_commit_description ='''
+  concat(
+    coalesce(description, default_commit_description, "\n"),
+    surround(
+      "\nJJ: This commit contains the following changes:\n", "",
+      indent("JJ:     ", diff.stat(72)),
+    ),
+    "\nJJ: ignore-rest\n",
+    diff.git(),
+  )
+  '''
