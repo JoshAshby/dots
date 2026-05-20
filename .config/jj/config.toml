@@ -2,9 +2,13 @@
   name = "Josh Ashby"
   email = "joshuaashby@joshashby.com"
 
+
 [signing]
   behavior = "own"
-  backend = "gpg"
+  #backend = "gpg"
+  backend = "ssh"
+  key = "~/.ssh/id_ed25519.pub"
+
 
 [git]
   write-change-id-header = true
@@ -17,23 +21,35 @@
   diff-formatter = ":git"
   default-command = "status"
 
-[ui.movement]
-  # Make next/prev default to edit rather than new temp commits
-  edit = true
+  [ui.movement]
+    # Make next/prev default to edit rather than new temp commits
+    edit = true
+
+
+[[--scope]]
+  --when.repositories = ["~/Developer/"]
+  [--scope.user]
+    email = "joshuaashby@joshashby.com"
+
+[[--scope]]
+  --when.repositories = ["~/Developer/Work/FinalForms"]
+  [--scope.user]
+    email = "josh.ashby@finalforms.com"
+
 
 [aliases]
   # Whats up after `main`?
   log-main = ["log", "-r", "trunk()::"]
 
   # Part of my mega-merge workflow, logs out the merge tree from trunk to where I am
-  log-workspace = ["log", "-r", "trunk()::roots(@)"]
+  log-workspace = ["log", "-r", "trunk() | trunk()..roots(@)"]
 
   # Log out where I am, trunk, and everything else that is "mine" except for
   # branches that start with "backup/" because those come from Forks rebase
   # feature.
   log-me = ["log", "-r", "@ | ancestors(trunk()..(visible_heads() & mine() ~bookmarks(backup)), 2) | trunk()"]
 
-  # I keep a local branch to stash various experiments that don't fit in with
+  # I tend to keep a local branch to stash various experiments that don't fit in with
   # the standard megamerge workflow (too much merge noise for example) to I
   # like having a quick way to log it out and see each experiments branch.
   # Kinda like a separate mega-merge workflow for highly disruptive experiments
@@ -51,52 +67,88 @@
   stack = ["rebase", "--after", "trunk()", "--before", "closest_merge(@)", "--revision"]
 
   # `jj stage` to include the whole stack after the megamerge
-  stage = ["stack", "closest_merge(@).. ~ empty()"]
+  stage = ["stack", "closest_merge(@)+:: ~ empty()"]
 
   # `jj restack` to rebase your changes onto `trunk()`
-  restack = ["rebase", "--onto", "trunk()", "--source", "roots(trunk()..) & mutable()"]
+  restack = ["rebase", "--onto", "trunk()", "--source", "roots(trunk()..) & stack()"]
+
 
 
 [revset-aliases]
+  # Trunk is almost always `main` these days
+  'trunk()' = "main@origin"
   'recent()' = 'committer_date(after:"1 month ago")'
-  'immutable_heads()' = "(trunk() | tags())"
   'closest_merge(to)' = "heads(::to & merges())"
+
+  # 'immutable_heads()' = "(trunk() | tags())"
+  'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags() | bookmarks(backup)'
+
+  # Taken from https://github.com/thoughtpolice/a/blob/2f768e1b0407bc63d6dd01097ff1c5210e48d8f6/tilde/aseipp/dotfiles/jj/config.toml#L98-L104
+  'stack()' = 'stack(@)'
+  'stack(x)' = 'stack(x, 2)'
+  'stack(x, n)' = 'ancestors(reachable(x, mutable()), n)'
 
 
 [templates]
+  # Removes some noise from the default log output so it displays as a single
+  # line of basically: <rev> <descriptions first line> 
+  # Removes:
+  # - email
+  # - commit sha
+  # - commit timestamp
   log = '''
-  if(root,
-    format_root_commit(self),
-    label(if(current_working_copy, "working_copy"),
-      concat(
-        separate(" ",
-          format_short_change_id_with_change_offset(self),
-          if(empty, label("empty", "(empty)")),
-          if(description,
-            description.first_line(),
-            label(if(empty, "empty"), description_placeholder),
-          ),
-          bookmarks,
-          tags,
-          working_copies,
-          if(self.contained_in('first_parent(@)'), label("git_head", "HEAD")),
-          if(conflict, label("conflict", "conflict")),
-          if(config("ui.show-cryptographic-signatures").as_boolean(),
-            format_short_cryptographic_signature(signature)),
-        ) ++ "\n",
-      ),
+    if(root,
+      format_root_commit(self),
+      label(
+        if(current_working_copy, "working_copy"),
+        concat(
+          separate(" ",
+            format_short_change_id_with_change_offset(self),
+            if(empty, label("empty", "(empty)")),
+            if(description,
+              description.first_line(),
+              label(if(empty, "empty"), description_placeholder),
+            ),
+            bookmarks,
+            tags,
+            working_copies,
+            if(self.contained_in('first_parent(@)'), label("git_head", "HEAD")),
+            if(conflict, label("conflict", "conflict")),
+            if(
+              config("ui.show-cryptographic-signatures").as_boolean(),
+              format_short_cryptographic_signature(signature)
+            ),
+          ) ++ "\n",
+        ),
+      )
     )
-  )
   '''
 
+  # Adds the changes to the bottom of the description in an ignored section so
+  # that it's easier to see what I'm describing
   draft_commit_description ='''
-  concat(
-    coalesce(description, default_commit_description, "\n"),
-    surround(
-      "\nJJ: This commit contains the following changes:\n", "",
-      indent("JJ:     ", diff.stat(72)),
-    ),
-    "\nJJ: ignore-rest\n",
-    diff.git(),
-  )
+    concat(
+      coalesce(description, default_commit_description, "\n"),
+      surround(
+        "\nJJ: This commit contains the following changes:\n", "",
+        indent("JJ:     ", diff.stat(72)),
+      ),
+      "\nJJ: ignore-rest\n",
+      diff.git(),
+    )
+  '''
+
+
+[template-aliases]
+  # Grabs the value from a git-trailer in the commit message, so that something
+  # like `ticket:cu-123` can be used with `trailer_value("ticket")` to get
+  # "cu-123" out.
+  # Taken from https://lobste.rs/c/nfmydb
+  'trailer_value(key)' = '''
+    stringify(
+      if(trailers.any(|t| t.key() == key),
+        trailers.filter(|t| t.key() == key).first().value(),
+        ""
+      )
+    )
   '''
