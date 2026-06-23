@@ -28,3 +28,9 @@ log/
 .cashby.procfile
 
 mise.local.toml
+.miserc.toml
+
+*..db-wal
+*..db-shm
+
+**/.claude/settings.local.json

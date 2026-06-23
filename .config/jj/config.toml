@@ -3,11 +3,15 @@
   email = "joshuaashby@joshashby.com"
 
 
+[[--scope]]
+  --when.repositories = ["~/Developer/"]
+  [--scope.user]
+    email = "joshuaashby@joshashby.com"
+
+
 [signing]
   behavior = "own"
-  #backend = "gpg"
-  backend = "ssh"
-  key = "~/.ssh/id_ed25519.pub"
+  backend = "gpg"
 
 
 [git]
@@ -20,21 +24,11 @@
   diff-editor = ":builtin"
   diff-formatter = ":git"
   default-command = "status"
+  merge-editor = ":builtin"
 
   [ui.movement]
     # Make next/prev default to edit rather than new temp commits
     edit = true
-
-
-[[--scope]]
-  --when.repositories = ["~/Developer/"]
-  [--scope.user]
-    email = "joshuaashby@joshashby.com"
-
-[[--scope]]
-  --when.repositories = ["~/Developer/Work/FinalForms"]
-  [--scope.user]
-    email = "josh.ashby@finalforms.com"
 
 
 [aliases]
@@ -76,11 +70,11 @@
 
 [revset-aliases]
   # Trunk is almost always `main` these days
-  'trunk()' = "main@origin"
+  'trunk()' = "main"
   'recent()' = 'committer_date(after:"1 month ago")'
   'closest_merge(to)' = "heads(::to & merges())"
 
-  # 'immutable_heads()' = "(trunk() | tags())"
+  #'immutable_heads()' = "builtin_immutable_heads() | (present(trunk()) | tags() | bookmarks(backup))"
   'immutable_heads()' = 'present(trunk()) | untracked_remote_bookmarks() | tags() | bookmarks(backup)'
 
   # Taken from https://github.com/thoughtpolice/a/blob/2f768e1b0407bc63d6dd01097ff1c5210e48d8f6/tilde/aseipp/dotfiles/jj/config.toml#L98-L104

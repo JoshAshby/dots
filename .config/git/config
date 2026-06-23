@@ -6,6 +6,12 @@
   email = joshuaashby@joshashby.com
   signingkey = ADFDC3AF
 
+[commit]
+  gpgsign = true
+
+[includeIf "gitdir:~/Developer/Work/FinalForms/"]
+  path = ~/.config/git/conf.d/finalforms.gitconfig
+
 [core]
   excludesfile = ~/.gitignore_global
   editor = /opt/homebrew/bin/vim
@@ -16,9 +22,6 @@
 
 [init]
   defaultBranch = main
-
-[commit]
-  gpgsign = true
 
 [pull]
   rebase = true
